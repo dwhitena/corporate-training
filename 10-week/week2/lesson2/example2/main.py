@@ -76,7 +76,7 @@ def pytorch_lr_fit(x, y, learning_rate, epochs, lambda1, lambda2):
         features = Variable(torch.from_numpy(x).float(), requires_grad=True)
         response = Variable(torch.from_numpy(y).float())
         
-        #clear the gradients
+        # clear the gradients
         optimiser.zero_grad()
         
         # calculate the predicted values
