@@ -59,7 +59,7 @@ service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   32m
 You will also need to clone the tutorial materials from GitHub to this machine:
 
 ```
-$ git clone https://github.com/dwhitena/oreilly-ai-k8s-tutorial.git
+$ git clone https://github.com/dwhitena/corporate-training.git
 ```
 
 ## 2. Deploy KubeFlow
