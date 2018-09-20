@@ -80,6 +80,7 @@ training            8 seconds ago       0B
 We have our training data repository, but we haven't put our training data set into this repository yet. To get this data into Pachyderm, we run:
 
 ```
+$ cd corporate-training/pach-pytorch/
 $ pachctl put-file training master iris.csv -f data/iris.csv
 ```
 
@@ -105,20 +106,12 @@ Once you have `pre-process.json`, creating our `pre_process` pipeline is as easy
 $ pachctl create-pipeline -f pre-process.json
 ```
 
-Once the pipeline worker spins up (which you can watch via `kubectl get pods`), Pachyderm will automatically kick off a job to perform the pre-processing:
+Once the pipeline worker spins up (which you can watch via `kubectl get pods`), Pachyderm will automatically kick off a job to perform the pre-processing. That job should complete pretty quickly:
 
 ```
 $ pachctl list-job
-ID                               OUTPUT COMMIT                                STARTED            DURATION RESTART PROGRESS  DL UL STATE
-da28d87632e44898be301d6baf13a5ee pre_process/cd94a0be5558492d9dbf2e5d973c8b0a About a minute ago -        0       0 + 0 / 1 0B 0B running
-```
-
-That job should complete pretty quickly:
-
-```
-$ pachctl list-job
-ID                               OUTPUT COMMIT                                STARTED            DURATION       RESTART PROGRESS  DL       UL       STATE
-da28d87632e44898be301d6baf13a5ee pre_process/cd94a0be5558492d9dbf2e5d973c8b0a About a minute ago About a minute 0       1 + 0 / 1 4.308KiB 10.82KiB success
+ID                               OUTPUT COMMIT                                STARTED        DURATION   RESTART PROGRESS  DL       UL       STATE
+ec0baa39219e4649a82e418864ec0af5 pre_process/45073cfb42c64c63afcc270a960a55bb 48 seconds ago 41 seconds 0       1 + 0 / 1 4.308KiB 10.82KiB success
 ```
 
 Once it is complete, you will notice that you have a new data repository for the output from this stage of our pipeline, and that data repository has our pre-processed data:
@@ -142,22 +135,18 @@ Again, this will automatically kick off a training job (after the pod initialize
 
 ```
 $ pachctl list-job
-ID                               OUTPUT COMMIT                                STARTED       DURATION       RESTART PROGRESS  DL       UL       STATE
-6ad8bc882c4748d5a308cab6e32866f2 train/df90f50ea4814db8866004163bdcd126       5 minutes ago -              0       0 + 0 / 1 0B       0B       running
-da28d87632e44898be301d6baf13a5ee pre_process/cd94a0be5558492d9dbf2e5d973c8b0a 9 minutes ago About a minute 0       1 + 0 / 1 4.308KiB 10.82KiB success
-$ pachctl list-job
-ID                               OUTPUT COMMIT                                STARTED        DURATION       RESTART PROGRESS  DL       UL       STATE
-6ad8bc882c4748d5a308cab6e32866f2 train/df90f50ea4814db8866004163bdcd126       5 minutes ago  5 minutes      0       1 + 0 / 1 10.82KiB 787B     success
-da28d87632e44898be301d6baf13a5ee pre_process/cd94a0be5558492d9dbf2e5d973c8b0a 10 minutes ago About a minute 0       1 + 0 / 1 4.308KiB 10.82KiB success
+ID                               OUTPUT COMMIT                                STARTED            DURATION       RESTART PROGRESS  DL       UL       STATE
+5551a320544745d5adff64022a1a9c46 train/1d834e8d598c4460bf4bdfb5aa15a0f9       About a minute ago About a minute 0       1 + 0 / 1 10.82KiB 787B     success
+ec0baa39219e4649a82e418864ec0af5 pre_process/45073cfb42c64c63afcc270a960a55bb 3 minutes ago      41 seconds     0       1 + 0 / 1 4.308KiB 10.82KiB success
 $ pachctl list-repo
-NAME                CREATED             SIZE
-train               6 minutes ago       787B
-pre_process         10 minutes ago      10.82KiB
-training            14 minutes ago      4.308KiB
-attributes          14 minutes ago      0B
+NAME        CREATED            SIZE
+train       About a minute ago 787B
+pre_process 3 minutes ago      10.82KiB
+attributes  5 minutes ago      0B
+training    5 minutes ago      4.308KiB
 $ pachctl list-file train master
-NAME                TYPE                SIZE
-model.pt            file                787B
+NAME     TYPE SIZE
+model.pt file 787B
 ```
 
 ## 6. Commit input attributes
@@ -191,9 +180,9 @@ This will kick off an inference job, because we have committed unprocessed attri
 ```
 $ pachctl list-job
 ID                               OUTPUT COMMIT                                STARTED        DURATION       RESTART PROGRESS  DL       UL       STATE
-21306064197849008785bc80808421b7 inference/a9075053dba0442b954af6c4636894d8   18 seconds ago 14 seconds     0       2 + 0 / 2 1.693KiB 139B     success
-6ad8bc882c4748d5a308cab6e32866f2 train/df90f50ea4814db8866004163bdcd126       10 minutes ago 5 minutes      0       1 + 0 / 1 10.82KiB 787B     success
-da28d87632e44898be301d6baf13a5ee pre_process/cd94a0be5558492d9dbf2e5d973c8b0a 14 minutes ago About a minute 0       1 + 0 / 1 4.308KiB 10.82KiB success
+febedb9a0c0d43ea858e5c7869780319 inference/be1be34c1e4e4ec5ad379a65ad6ca5b5   13 seconds ago 12 seconds     0       2 + 0 / 2 1.678KiB 127B     success
+5551a320544745d5adff64022a1a9c46 train/1d834e8d598c4460bf4bdfb5aa15a0f9       3 minutes ago  About a minute 0       1 + 0 / 1 10.82KiB 787B     success
+ec0baa39219e4649a82e418864ec0af5 pre_process/45073cfb42c64c63afcc270a960a55bb 5 minutes ago  41 seconds     0       1 + 0 / 1 4.308KiB 10.82KiB success
 $ pachctl list-repo
 NAME                CREATED             SIZE
 inference           47 seconds ago      139B
